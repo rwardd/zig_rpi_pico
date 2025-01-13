@@ -1,0 +1,3 @@
+Currently fleshing out build system. 
+
+The goal is to just run `zig build` to build the bootloader, CRC the binary, then build the rest of the application.
