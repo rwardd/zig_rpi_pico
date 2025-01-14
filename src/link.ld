@@ -19,15 +19,20 @@ SECTIONS
         __boot2_end = .;
     } > FLASH
 
+    .flashtext : ALIGN(4) {
+        KEEP(*(.vectors*))
+    } > FLASH
+
     .text : ALIGN(4) {
         __text = .;
-        KEEP(*(.vectors*))
         *(.text*)
         *(.rodata)
         *(.rodata.*)
         . = ALIGN(4);
         __end_text = .;
-    } > FLASH
+    } > RAM AT> FLASH
+    __text_source = LOADADDR(.text);
+    . = ALIGN(4);
 
     .data : ALIGN(4) {
         __start_data = .;
@@ -35,6 +40,8 @@ SECTIONS
         . = ALIGN(4);
         __end_data = .;
     } > RAM AT > FLASH
+    __data_source = LOADADDR(.data);
+    . = ALIGN(4);
 
     .bss : ALIGN(4) {
         __start_bss = .;

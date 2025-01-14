@@ -38,11 +38,22 @@ __vectors:
 .thumb_func
 _start:
     /* Copy data from flash to ram */
-    ldr r3, =__start_data;
-    ldr r4, =__data_dest
-    ldr r5, =__end_data_dest
-    b data_copy
+    ldr r3, =__text_source;
+    ldr r4, =__text
+    ldr r5, =__end_text
+    b text_copy
+text_copy_loop:
+    ldm r3!, {r0}
+    stm r4!, {r0}
+text_copy:
+    cmp r4, r5
+    bne text_copy_loop
 
+begin_data_copy:
+    ldr r3, =__data_source
+    ldr r4, =__start_data
+    ldr r5, =__end_data
+    b data_copy
 data_copy_loop:
     ldm r3!, {r0}
     stm r4!, {r0}
@@ -50,6 +61,7 @@ data_copy:
     cmp r4, r5
     bne data_copy_loop
 
+begin_fill_bss:
     ldr r1, =__start_bss;
     ldr r2, =__end_bss;
     movs r0, #0
