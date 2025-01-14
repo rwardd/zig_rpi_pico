@@ -1,31 +1,48 @@
 .cpu cortex-m0plus
 .thumb
+.align 4
 
 .section .vectors, "ax"
-.align 2
 .global __vectors
 __vectors:
+.balign 4
 .word __stack_top
-.word _reset_handler
+.word _start
 .word 0
-.word 0
-.word 0
-.word 0
-.word 0
-.word 0
-.word 0
-.word 0
+.word loop
+
 .word 0
 .word 0
 .word 0
 .word 0
 
-.section .reset, "ax"
-_reset_handler:
+.word 0
+.word 0
+.word 0
+.word 0
+
+.word 0
+.word 0
+.word 0
+.word 0
+
+;@_start:
+;@    ldr r0, =(0x10000000 + 0x100)  /* Load address of Vector table */
+;@    ldr r1, =(0xe0000000 + 0xed08) /* VTOR */
+;@    str r0, [r1]
+;@    ldmia r0, {r0, r1}
+;@    msr msp, r0
+;@    bx r1
+
+.global _start
+.thumb_func
+_start:
+    cpsid i
+    b start_main
     /* Copy data from flash to ram */
-    ldr r3, =__text_start
-    ldr r4, =__text
-    ldr r5, =__end_data;
+    ldr r3, =__start_data;
+    ldr r4, =__data_dest
+    ldr r5, =__end_data
     b data_copy
 
 data_copy_loop:
@@ -44,9 +61,12 @@ fill_bss_loop:
 fill_bss:
     cmp r1, r2
     bne fill_bss_loop
-
+start_main:
     ldr r0, =start
     bx r0
 
+.thumb_func
+loop:
+    b loop
 
 

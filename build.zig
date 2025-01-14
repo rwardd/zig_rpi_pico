@@ -4,6 +4,7 @@ const Target = std.Target;
 const Feature = std.Target.Cpu.Feature;
 
 pub fn build(b: *std.Build) void {
+    const bootloader_optimize = b.standardOptimizeOption(.{});
     const crc_padder = b.addExecutable(.{
         .name = "compute_crc",
         .root_source_file = b.path("compute_crc.zig"),
@@ -11,11 +12,10 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(crc_padder);
 
-    const bootloader_optimize = b.standardOptimizeOption(.{});
     const target = std.Target.Query{
         .cpu_arch = Target.Cpu.Arch.arm,
         .os_tag = Target.Os.Tag.freestanding,
-        .abi = Target.Abi.none,
+        .abi = Target.Abi.eabi,
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m0plus },
     };
 
@@ -25,8 +25,6 @@ pub fn build(b: *std.Build) void {
     boot.step.dependOn(&crc_padder.step);
 
     b.installArtifact(boot);
-    //const boot_elf = b.addInstallArtifact(boot, .{});
-    //b.default_step.dependOn(&boot_elf.step);
 
     const boot_bin = b.addObjCopy(boot.getEmittedBin(), .{ .format = .bin });
     boot_bin.step.dependOn(&boot.step);
@@ -34,17 +32,18 @@ pub fn build(b: *std.Build) void {
     const boot_binary = b.addInstallBinFile(boot_bin.getOutput(), "boot2_unpadded.bin");
     b.default_step.dependOn(&boot_binary.step);
 
-    const generate_crc = [_][]const u8{ "./zig-out/bin/compute_crc", "./zig-out/bin/boot2_unpadded.bin" };
-    //const compute_crc = b.addSystemCommand(&.{"./zig-out/bin/compute_crc"});
-    //compute_crc.addArg("./zig-out/bin/boot2_unpadded.bin");
-    _ = b.run(&generate_crc);
+    const crc_step = b.addRunArtifact(crc_padder);
+    crc_step.addFileArg(boot_bin.getOutput());
+    const output = crc_step.addOutputFileArg("padded_checked_boot.s");
 
     const exe = b.addExecutable(.{
         .target = b.resolveTargetQuery(target),
         .name = "main",
         .root_source_file = b.path("src/start.zig"),
+        .optimize = bootloader_optimize,
     });
-    exe.addAssemblyFile(b.path("src/boot2.s"));
+    exe.addAssemblyFile(output);
+    exe.addAssemblyFile(b.path("src/start.s"));
     exe.setLinkerScriptPath(b.path("src/link.ld"));
 
     exe.addIncludePath(b.path("src"));

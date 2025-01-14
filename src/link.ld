@@ -7,6 +7,9 @@ MEMORY
     RAM(rwx)  : ORIGIN = 0x20000000, LENGTH = 256k
 }
 
+__stack_top = ORIGIN(RAM) + LENGTH(RAM);
+__data_dest = ORIGIN(RAM) + 256;
+
 SECTIONS
 {
     .boot2 : ALIGN(4) {
@@ -16,20 +19,21 @@ SECTIONS
     } > FLASH
 
     .text : ALIGN(4) {
-        __text = .; /* 0x2000000 */
+        __text = .;
+        KEEP(*(.vectors*))
         *(.text*)
         *(.rodata)
         *(.rodata.*)
         . = ALIGN(4);
         __end_text = .;
-    } > RAM AT > FLASH
+    } > FLASH
 
     .data : ALIGN(4) {
         __start_data = .;
         *(.data*)
         . = ALIGN(4);
         __end_data = .;
-    } > RAM AT > FLASH
+    } > FLASH
 
     .bss : ALIGN(4) {
         __start_bss = .;
@@ -38,7 +42,5 @@ SECTIONS
         __end_bss = .;
     } > RAM
 
-    PROVIDE(__text_start = ORIGIN(FLASH));
-    PROVIDE(__stack_top = ORIGIN(RAM) + LENGTH(RAM));
     ASSERT (__boot2_end - __boot2_start == 256, "ERROR: bootloader must be 256 bytes")
 }

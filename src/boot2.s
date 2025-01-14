@@ -2,6 +2,7 @@
 .thumb
 
 .section .text, "ax"
+    push {lr} 
     ldr r2, =0x18000000  /* XIP SSI Base register */
     
     ldr r0, =0x00000000  /* Disable SSI */
@@ -23,10 +24,15 @@
     ldr r0, =0x00000001  /* Enable SSI */
     str r0, [r2, #0x08]  /* SSI ENR Offset */
 
-    ldr r0, =(0x10000000 + 0x100)  /* Load address of Vector table */
-    ldr r1, =(0xe0000000 + 0xed08) /* VTOR */
+    ldr r0, =0x10000100  /* Load address of Vector table */
+    ldr r1, =0xe000ed08 /* VTOR */
     str r0, [r1]
-    ldmia r0, {r0, r1}
+
+    ldr r1, =0x10000100  /* Load address of Vector table */
+    str r0, [r1]
     msr msp, r0
-    bx r1
+    
+    ldr r1, =0x10000104  /* Load address of Vector table */
+    ldr r2, [r1]
+    bx r2
 
