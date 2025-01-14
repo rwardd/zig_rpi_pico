@@ -81,7 +81,7 @@ fn main() void {
     initialise_hardware();
     initialise_uart(&uart);
     while (true) {
-        uart_puts(&uart, "Hello, World");
+        uart_puts(&uart, "Hello, World\r\n");
         var counter: u32 = 0;
         while (counter != 0xFFFFFF) {
             counter += 1;
