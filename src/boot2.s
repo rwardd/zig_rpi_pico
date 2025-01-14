@@ -29,7 +29,7 @@
     str r0, [r1]
 
     ldr r1, =0x10000100  /* Load address of Vector table */
-    str r0, [r1]
+    ldr r0, [r1]
     msr msp, r0
     
     ldr r1, =0x10000104  /* Load address of Vector table */

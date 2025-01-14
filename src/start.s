@@ -26,13 +26,6 @@ __vectors:
 .word 0
 .word 0
 
-;@_start:
-;@    ldr r0, =(0x10000000 + 0x100)  /* Load address of Vector table */
-;@    ldr r1, =(0xe0000000 + 0xed08) /* VTOR */
-;@    str r0, [r1]
-;@    ldmia r0, {r0, r1}
-;@    msr msp, r0
-;@    bx r1
 
 .global _start
 .thumb_func
