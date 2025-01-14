@@ -34,7 +34,7 @@ SECTIONS
         *(.data*)
         . = ALIGN(4);
         __end_data = .;
-    } > FLASH
+    } > RAM AT > FLASH
 
     .bss : ALIGN(4) {
         __start_bss = .;
