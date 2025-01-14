@@ -37,12 +37,10 @@ __vectors:
 .global _start
 .thumb_func
 _start:
-    cpsid i
-    b start_main
     /* Copy data from flash to ram */
     ldr r3, =__start_data;
     ldr r4, =__data_dest
-    ldr r5, =__end_data
+    ldr r5, =__end_data_dest
     b data_copy
 
 data_copy_loop:

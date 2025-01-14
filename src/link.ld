@@ -9,6 +9,7 @@ MEMORY
 
 __stack_top = ORIGIN(RAM) + LENGTH(RAM);
 __data_dest = ORIGIN(RAM) + 256;
+__end_data_dest = __data_dest + (__end_data - __start_data);
 
 SECTIONS
 {
