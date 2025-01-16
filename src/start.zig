@@ -1,17 +1,5 @@
-const peripheral = struct {
-    const Self = @This();
-    base_address: usize,
-
-    pub fn set(self: Self, offset: usize, value: u32) void {
-        const address: *volatile u32 = @ptrFromInt(self.base_address + offset);
-        address.* = value;
-    }
-
-    fn get(self: Self, offset: usize) u32 {
-        const address: *volatile u32 = @ptrFromInt(self.base_address + offset);
-        return address.*;
-    }
-};
+const peripheral = @import("peripheral.zig").peripheral;
+const SPI = @import("spi.zig").SPI;
 
 fn initialise_clocks() void {
     // Initialise system clocks
@@ -25,7 +13,7 @@ fn initialise_clocks() void {
     while ((crystal_oscillator.get(0x04) & 0x80000000) == 0) {}
 
     const clock = peripheral{ .base_address = 0x40008000 };
-    clock.set(0x30, 0x02);
+    clock.set(0x30, 0x02); // REFCLK source is external oscillator
     clock.set(0x3C, 0x00);
     clock.set(0x34, 0x100);
     clock.set(0x48, 0x880);
@@ -77,6 +65,9 @@ fn uart_puts(uart: *const peripheral, msg: []const u8) void {
 
 fn main() void {
     const uart = peripheral{ .base_address = 0x40034000 };
+    const spi = SPI{ .base_address = 0x4003c000 };
+    spi.init(1_000_000, 8, 1, 1); // 8 data bits, clock phase and polarity inverted
+    _ = spi.write(&[_]u32{0x01});
     initialise_clocks();
     initialise_hardware();
     initialise_uart(&uart);
