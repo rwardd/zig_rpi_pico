@@ -30,11 +30,11 @@ pub const SPI = struct {
     }
 
     inline fn is_writable(self: Self) bool {
-        return (self.get(0x0C) & 0x02) == 1;
+        return (self.get(0x0C) & 0x02) == 0x02;
     }
 
     inline fn is_readable(self: Self) bool {
-        return (self.get(0x0C) & 0x04) == 1;
+        return (self.get(0x0C) & 0x04) == 0x04;
     }
 
     pub fn write(self: Self, data: []const u32) usize {

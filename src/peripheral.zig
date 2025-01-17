@@ -11,4 +11,9 @@ pub const peripheral = struct {
         const address: *volatile u32 = @ptrFromInt(self.base_address + offset);
         return address.*;
     }
+
+    pub fn set_bit(self: Self, offset: usize, value: u32) void {
+        const address: *volatile u32 = @ptrFromInt(self.base_address + offset);
+        address.* |= value;
+    }
 };

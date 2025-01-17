@@ -24,7 +24,7 @@ SECTIONS
     } > FLASH
 
     .text : ALIGN(4) {
-        __text = .;
+        __text = .;k
         *(.text*)
         *(.rodata)
         *(.rodata.*)
@@ -52,3 +52,5 @@ SECTIONS
 
     ASSERT (__boot2_end - __boot2_start == 256, "ERROR: bootloader must be 256 bytes")
 }
+
+
