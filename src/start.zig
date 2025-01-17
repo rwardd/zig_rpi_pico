@@ -88,6 +88,8 @@ fn main() void {
     display.clear_screen(&spi, &sio, 0x0000);
     display.set_position(50, 20);
     display.draw_string(&spi, &sio, "Hello, Zig.", 0xFFFF);
+    display.set_position(50, 70);
+    display.draw_logo(&spi, &sio);
     while (true) {
         uart_puts(&uart, "Hello, World\r\n");
         var counter: u32 = 0;

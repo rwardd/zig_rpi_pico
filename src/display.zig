@@ -1,6 +1,7 @@
 const SPI = @import("spi.zig").SPI;
 const peripheral = @import("peripheral.zig").peripheral;
 const font = @import("font.zig").font;
+const logo = @import("ziglogo.zig").logo;
 
 pub fn set_window(spi: *const SPI, sio: *const peripheral, x: u16, xe: u16, y: u16, ye: u16) void {
     sio.set_bit(0x18, @intCast(1 << 21)); // Clear Data command
@@ -152,4 +153,22 @@ pub fn draw_char(spi: *const SPI, sio: *const peripheral, char: u8, colour: u16)
         rows = 8;
     }
     column_index += 11;
+}
+
+pub fn draw_pixel(spi: *const SPI, sio: *const peripheral, x: u16, y: u16) void {
+    set_window(spi, sio, x, x, y, y);
+    send_colour(spi, sio, 0xFFFF, 1);
+}
+
+pub fn draw_logo(spi: *const SPI, sio: *const peripheral) void {
+    for (0..153) |i| {
+        for (0..20) |j| {
+            const val: u8 = logo[i][j];
+            for (0..8) |p| {
+                if (val & (@as(u8, 1) << @intCast(7 - p)) != 0) {
+                    draw_pixel(spi, sio, column_index + @as(u16, @intCast((j * 8) + p)), row_index + @as(u16, @intCast(i)));
+                }
+            }
+        }
+    }
 }
