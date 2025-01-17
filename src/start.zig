@@ -85,10 +85,9 @@ fn main() void {
 
     display.reset(&sio);
     display.init(&spi, &sio);
-    for (0..30) |i| {
-        display.draw_line(&spi, &sio, 0, 240, @intCast(i), 0xFFFF);
-    }
-
+    display.clear_screen(&spi, &sio, 0x0000);
+    display.set_position(50, 20);
+    display.draw_string(&spi, &sio, "Hello, Zig.", 0xFFFF);
     while (true) {
         uart_puts(&uart, "Hello, World\r\n");
         var counter: u32 = 0;

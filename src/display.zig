@@ -1,5 +1,6 @@
 const SPI = @import("spi.zig").SPI;
 const peripheral = @import("peripheral.zig").peripheral;
+const font = @import("font.zig").font;
 
 pub fn set_window(spi: *const SPI, sio: *const peripheral, x: u16, xe: u16, y: u16, ye: u16) void {
     sio.set_bit(0x18, @intCast(1 << 21)); // Clear Data command
@@ -68,6 +69,11 @@ fn delay() void {
     }
 }
 
+pub fn clear_screen(spi: *const SPI, sio: *const peripheral, colour: u16) void {
+    set_window(spi, sio, 0, 240, 0, 320);
+    send_colour(spi, sio, colour, 240 * 320);
+}
+
 pub fn init(spi: *const SPI, sio: *const peripheral) void {
     sio.set_bit(0x18, @intCast(1 << 21)); // Clear Data command
     _ = spi.write(&[_]u32{0x01}); // RESET
@@ -92,5 +98,58 @@ pub fn init(spi: *const SPI, sio: *const peripheral) void {
     sio.set_bit(0x18, @intCast(1 << 21)); // Clear Data command
     _ = spi.write(&[_]u32{0x36}); // madctl
     sio.set_bit(0x10, @intCast(1 << 21)); // set Data command
-    _ = spi.write(&[_]u32{0xA0}); // madctl data
+    _ = spi.write(&[_]u32{0x00}); // madctl data
+}
+
+var column_index: u16 = 0;
+var row_index: u16 = 0;
+
+pub fn set_position(x: u16, y: u16) void {
+    if ((x > 240) and (y <= 420)) {
+        row_index = y;
+        column_index = 2;
+    } else {
+        row_index = y;
+        column_index = x;
+    }
+}
+
+pub fn draw_string(spi: *const SPI, sio: *const peripheral, string: []const u8, colour: u16) void {
+    const dy: u8 = 8 + (0x81 >> 4);
+
+    for (string) |char| {
+        const x = column_index + (5 << (0x81 & 0xF)) + 10;
+        const y = row_index + dy + 45;
+        if (x > 240) {
+            row_index += dy;
+            column_index = 10;
+        }
+        _ = y;
+        draw_char(spi, sio, char, colour);
+    }
+}
+
+///
+/// Algorithm Copyright (C) 2023 Marian Hrinko.
+/// *              Written by Marian Hrinko (mato.hrinko@gmail.com)
+/// *
+/// * @author      Marian Hrinko
+///
+pub fn draw_char(spi: *const SPI, sio: *const peripheral, char: u8, colour: u16) void {
+    var column: u8 = 5;
+    var rows: u8 = 8;
+
+    while (column != 0) {
+        column -= 1;
+        const letter: u8 = font[char - 32][column];
+        while (rows != 0) {
+            rows -= 1;
+            if ((letter & (@as(u8, 1) << @intCast(rows))) != 0) {
+                set_window(spi, sio, column_index + (column << 1), column_index + (column << 1) + 1, row_index + (rows << 1), row_index + (rows << 1) + 1);
+                send_colour(spi, sio, colour, 4);
+            }
+        }
+        rows = 8;
+    }
+    column_index += 11;
 }
